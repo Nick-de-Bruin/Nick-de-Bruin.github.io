@@ -9,6 +9,7 @@ import rehypeKatex from 'rehype-katex';
 
 // https://astro.build/config
 export default defineConfig({
+  site: "https://Nick-de-Bruin.github.io",
   integrations: [mdx()],
   vite: {
     plugins: [tailwindcss()]
