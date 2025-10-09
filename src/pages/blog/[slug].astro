@@ -1,0 +1,47 @@
+---
+import "../../styles/global.css"
+import { getCollection } from "astro:content";
+import type { InferGetStaticPropsType, GetStaticPaths } from "astro";
+
+type Props = InferGetStaticPropsType<typeof getStaticPaths>;
+
+  export const getStaticPaths = (async () => {
+    const entries = await getCollection("blog");
+    return entries.map((entry: {
+      render(): unknown;
+      data: any; slug: string 
+    }) => ({
+        params: {
+            slug: entry.slug,
+        },
+        props: {entry},
+    }));
+}) satisfies GetStaticPaths;
+
+const { entry } = Astro.props as Props;
+const data = entry.data;
+const content = await entry.render();
+---
+
+<?xml version="1.0" encoding="UTF-8"?>
+<html>
+<head>
+    <title>{data.title}</title>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link href=" https://cdn.jsdelivr.net/npm/katex@0.16.23/dist/katex.min.css " rel="stylesheet">
+</head>
+<body class="bg-neutral-900 max-w-3xl mx-auto">
+  <div class="prose prose-neutral prose-invert py-16 max-w-3xl mx-auto">
+    <p><a href="/">Home</a></p>
+    <header>
+      <h1 class="mb-0">{entry.data.title}</h1>
+      <p class="text-neutral-400 text-sm mb-12">{data.date}</p>
+    </header>
+    <article>
+      <!-- @ts-ignore -->
+      <content.Content />
+    </article>
+  </div>
+</body>
+</html>
