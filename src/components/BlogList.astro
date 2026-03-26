@@ -1,7 +1,7 @@
 ---
 import { getCollection } from "astro:content"
 
-const posts = await getCollection("blog");
+const posts = await getCollection("blog", ({ data }) => data.published !== false);
 ---
 
 <ul class="space-y-4 text-center">

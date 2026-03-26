@@ -1,0 +1,281 @@
+---
+title: "Interlude: Git and Version Management"
+author: "Nick de Bruin"
+desc: "A quick interlude on how and why to use git."
+date: "2026-03-26"
+published: false
+---
+
+If you're a bit interested in how programming works, and you've maybe looked around some open source projects before, you'll likely have stumbled upon [GitHub](https://github.com/) at some point. GitHub is a website that hosts git **repositories**. To some people new to programming, the concepts of Git and GitHub can become synonymous. However, there are other sites like GitHub. [Codeberg](https://codeberg.org/explore/repos) and [Gitlab](https://gitlab.com/explore/projects/active) also host repositories.
+
+Git itself is something else entirely: Git is a *distributed version control system*. While it was originally built to make work on the Linux kernel[^1] more manageable, it is now a tool that is widely used both professionally and for hobby projects.
+
+Let's dive into the definition before we dive into the tool itself. As mentioned, Git has a concept called a *repository*. A repository is just a collection of code files that belong to a project. Krita, an *open source* art program, [has its source code available](https://invent.kde.org/graphics/krita)[^2]. You can freely browse around the source code here, and look at the files to see the actual code.
+
+*Distributed* in this context means that as soon as you start working on a project (or, repository), you get an entire copy of the repository. In fact, you don't just get the entire current state of the repository, but also the full history! Some repositories are even up on multiple websites[^3]. For us, this doesn't matter much, other than the fact everything you do locally on your computer stays locally on your computer until you **push** it to a **remote**. More on what that means later.
+
+Let's actually get into using this thing. First, you will need to install Git, [you can do so on its website](https://git-scm.com/). When installing, you should be fine just following the default configuration for everything. When you're done installing, open the command line and write the following:
+
+```sh
+$ git --version
+```
+
+That should give you a result similar to this, if everything was installed correctly.
+
+```
+git version 2.53.0
+```
+
+If it doesn't, try restarting your computer or try installing it again.
+
+> [!NOTE]
+> ### Command line...?
+>
+> Okay, I admit, if you've never used the command line before, that may be a bit scary. Let me introduce you. On windows, to open your command line, press `Windows Key + R` and type `cmd`, then press enter. On Mac, locate the Terminal application and run this.
+>
+> I won't tell you to run any scary commands in this post. In fact, this is probably the only section that will have you run commands. If you don't want to run any of the commands, I'll offer an alternative by the end of this post that will let you use a bunch of git's functionality through an application.
+> 
+> For now, and important thing to note is that when you put a command in your terminal, you shouldn't copy the `$` or `#` in front of the command. The `$` just means it should be run as a normal user, while the `#` means it should be run as a privileged user (administrator / root). We won't be using the latter, but it's good practice to get used to the notation anyway. Lines without that are the output you should expect.
+
+So now that you've installed git, and made sure it's working, we can move on to using it. But before we do that, let's take a moment to talk about the *why*. From a programmer's perspective: Back in the day, when you worked on a big project together with a bunch of people, you would take your files, probably email them to some manager of the project, and that person would merge all the changes together into one working version. You can imagine this becomes unwieldy at some point.
+
+And so, there came some version management tools. Some of them worked online, meaning there was only one copy of each file. If you work in art professionally, you may be familiar with this: having to *check out* files before you edit them, to signal to others that they probably shouldn't also be editing them.
+
+But for programming, this can be annoying. If there's a function in a file and you need to change a single line, you don't want to wait for another person who is editing a different function in the same file. And so we have git: you get a copy of the entire project, you make your changes, and then you *push* your changes to a *remote* (or server). Before you do that, you'll have to *pull* other changes that have been pushed while you were editing. These will get *merged* into your code automatically where possible.
+
+> [!NOTE]
+> At this point you might be thinking something along the lines of "I want that for art too! I'm going to put all my art in git!", to which I'm sorry and I will have to disappoint you. Git doesn't work well with binary files, meaning two people working on the same file still won't work nicely. Maybe at some point in the future...
+
+So let's start. We're going to make a git repository, locally, on our own computer. Make an empty folder somewhere, and open a command prompt there.
+
+> [!NOTE]
+> To open a command prompt in a folder, on windows you can go to the folder, and then in file explorer, in the path at the top, remove all the text and type `cmd` and hit enter. This will set your `cmd` up to be run from here.
+>
+> Otherwise, you will have to run the following command:
+> ```sh
+> $ cd path/to/folder 
+> ```
+>
+> Please verify you're actually in the folder you want to be in:
+> ```sh
+> $ cd -
+> C:\Folder\You\Just\Made
+> ```
+> 
+> If it reads something else, please make sure you get this right before you continue.
+
+In the folder, run the following command:
+
+```sh
+$ git init 
+```
+
+Which should result in something like:
+
+```
+Initialized empty Git repository in /home/nick/Documents/cfa/.git/
+```
+
+So now we have a git respository. What's next? Well, if you reveal hidden files in your file explorer, first thing you'll see is that your folder now has a `.git/` folder inside of it. Don't try to edit this manually, and don't delete it.
+
+Add a new file in your repository. I'll go for a test file called `hello.js` that has the following content:
+
+```js
+console.log("Hello World");
+```
+
+Now, if you run:
+
+```sh
+$ git status
+```
+
+You should see an output something like:
+
+```
+On branch main
+
+No commits yet
+
+Untracked files:
+  (use "git add <file>..." to include in what will be committed)
+	hello.js
+
+nothing added to commit but untracked files present (use "git add" to track)
+```
+
+There's a bunch of information here. We'll ignore the idea of a branch for now, and we'll get to the concept of a commit in a second. We see, however, that the file we just made is under `Untracked files`. Luckily, git is somewhat friendly and tells us what to do. Let's follow its instructions:
+
+```sh
+$ git add hello.js
+```
+
+Now we've done that, if we run `git status` again, we'll get the following result instead:
+
+```
+On branch main
+
+No commits yet
+
+Changes to be committed:
+  (use "git rm --cached <file>..." to unstage)
+	new file:   hello.js
+```
+
+Which shows us that we've added a new file! Great. But we haven't committed it yet.
+
+> [!NOTE]
+> Quick aside: I generally find it much easier to use `git add .`, which will add all files in your current folders and subfolders. Git does *not* track empty folders, so you can't add or commit those. Sometimes, you might want to not add, commit, or push some files in which you keep secrets that aren't for other people to see. There's a simple way to deal with this. If you add a file called `.gitignore` to your folder, you can add files or folders you'd like to exclude to this.
+>
+> For example, if I had a folder called `Secrets/` and a file called `secrets.js` that I don't want to get added, my `.gitignore` would look like this:
+>
+> ```
+> secrets.js
+> Secrets/
+> ```
+
+When we've added all our files that we want to commit, we should run the following:
+
+```sh
+$ git commit -m "The reason for our commit"
+```
+
+For the message, I'm choosing `Added hello.js`. If you're playing around, you'll notice that you can't commit changes without adding a message. If you've done everything correctly, you should see something like this:
+
+```
+[main (root-commit) f38afff] Added hello.js
+ 1 file changed, 1 insertion(+)
+ create mode 100644 hello.js
+```
+
+Although the numbers are probably going to be different.
+
+So we've actually committed a file now. What does that actually mean? Well, if you had a remote right now, and you ran `git push`, it would push your changes to your remote, and it would be available to other people as well. But for now, let's keep things local while we talk through a bit more terminology and edit our file further.
+
+First, lets look at `git status` again:
+
+```
+On branch main
+nothing to commit, working tree clean
+```
+
+We've committed everything and there's nothing new in our folder. That's good. Let's make some changes, and while we do so, let's talk about the concept of a **branch**. Sometimes, when we're making bigger changes, we might want to take a snapshot of our code before we start breaking things. In git, we call this a **branch**, you're (often temporarily) branching away from your main branch (sometimes referred to as the trunk). This means that any changes you make on this branch won't hurt your main branch. Let's actually make one:
+
+```sh
+$ git checkout -b Feature1
+```
+
+If you run this, you should get a message along the lines of:
+
+```
+switched to a new branch 'Feature1'
+```
+
+In this branch, let's edit our `hello.js` file. I'm adding the following line at the end of the file:
+
+```js
+console.log("Hello from Feature1");
+```
+
+We can actually see what changes we made if we run `git diff hello.js`. That should result in something like this:
+
+```diff
+diff --git a/hello.js b/hello.js
+index b179ee9..ec323d5 100644
+--- a/hello.js
++++ b/hello.js
+@@ -1 +1,2 @@
+ console.log("Hello world");
++console.log("Hello from Feature1");
+```
+
+We can see that the line we added has a `+` in front of it. Lines removed would have a `-` in front of them. Anyway, let's add and commit this change:
+
+```sh
+$ git add .
+$ git commit -m "Added new console log"
+```
+
+Now, close the file and let's switch back to our main branch:
+
+```sh
+$ git checkout main
+```
+
+> [!NOTE]
+> `main` might be called `master` or something else depending on your version of git and your settings during install. If you're not sure which branches exist for you locally, run `git branch` and it will list the branches that exist.
+>
+> Also notice we don't add `-b` after checkout in this case. We don't add it here because we are not making a new branch in this case.
+
+If you open the file now, you'll notice your changes are gone. Let's add something else to that file though, I'll do the following:
+
+```diff
+ console.log("Hello world");
++console.log("Added on main");
+```
+
+And again, add and commit this change.
+
+Now we have two branches with two different changes, in the same file. Imagine for a moment you didn't just make both of them yourself, but someone else made the `Feature1` branch, and you want to add that feature to your branch, or you're managing the main branch and want to add it there. This is where we get to the concept of a **merge**.
+
+So let's just merge our two branches together:
+
+```sh
+$ git merge Feature1
+```
+
+This will result in a message like the following:
+
+```
+Auto-merging hello.js
+CONFLICT (content): Merge conflict in hello.js
+Automatic merge failed; fix conflicts and then commit the result.
+```
+
+There goes our promise of automatic merges... To be fair, we edited the same file, and technically the same line, twice. We'll need to fix the conflict! If we run `git status` we get a bit more info.
+
+```
+On branch main
+You have unmerged paths.
+  (fix conflicts and run "git commit")
+  (use "git merge --abort" to abort the merge)
+
+Unmerged paths:
+  (use "git add <file>..." to mark resolution)
+	both modified:   hello.js
+
+no changes added to commit (use "git add" and/or "git commit -a")
+```
+
+If you open the file in your text editor, you'll be met with the following:
+
+```js
+console.log("Hello world");
+<<<<<<< HEAD
+console.log("Added on main");
+=======
+console.log("Hello from Feature1");
+>>>>>>> Feature1
+```
+
+Some text editors have fancy ways to display this, but for now I'm going to assume you're just using a text editor without any of that.
+
+In this, we see a set of changes: the changes belonging to `HEAD` (which refers to the branch / commit we were on) and the incoming change from the `Feature1` branch. To fix this, we can just remove the extra text and be left with the two console log statements. For good measurement, let's manually swap their order:
+
+```js
+console.log("Hello world");
+console.log("Hello from Feature1");
+console.log("Added on main");
+```
+
+Now, we simply add and commit again. If you add your file and run `git status`, you'll find it says something along the lines of `All conflicts have been fixed but you are still merging`.
+
+When you've committed, we're basically done. That's most of what you will interact with, when you use git. Of course, there's way more to it. If you make an account on GitHub or some other site, and choose to make a repository, it will guide you through adding the repository to your local, so you ca run `git push` and `git pull` to sync changes with this remote.
+
+There's also many many more commands you can run in git. The basic `add`, `commit`, `merge`, `push`, and `pull` are what you would mainly use if you end up using git, though. The git website provides [learning resources](https://git-scm.com/learn) where you can find out more about commands and how to use them.
+
+But, I did tell you about a way to use git without running all these commands. There's a couple of git tools that give you a user interface. One that gets used often is `git graph`, in Visual Studio Code. If you're not using Visual Studio Code, a program like [GitHub Desktop](https://github.com/apps/desktop) might be more up your alley. It puts all of the commands, plus many more, into a nice interface. If you choose to use it, I recommend going through this post again and trying to replicate the steps we did with GitHub Desktop, just so you know how it compares.
+
+[^1]: If you don't know what that means, don't worry. I won't mention it again.
+[^2]: Notice how that one is hosted on a different website? Actually, if you look closely, you can see that (at time of writing) it's hosted on a gitlab server that the KDE team hosts themselves. [KDE](https://kde.org/) is a community that works on a bunch of open source projects, such as applications like Krita.
+[^3]: Linux (an operating system like Windows or MacOS), for example, has its source code mirrored [on GitHub](https://github.com/torvalds/linux). They don't accept any change requests there, though.
